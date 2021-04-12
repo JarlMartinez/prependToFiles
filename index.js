@@ -1,6 +1,8 @@
+const fs = require( 'fs' );
+const path = require( 'path' );
 const { prependToFile } = require("./prependToFile");
 
-const myText = `//
+const TEXT_TO_PREPEND = `//
 //
 // Copyright 2021 Venafi, Inc.
 // All Rights Reserved.
@@ -14,60 +16,85 @@ const myText = `//
 
 `;
 
-const fs = require( 'fs' );
-const path = require( 'path' );
+// A tree can face multiple 'yes include' nodes, 
+// only one 'dont include' is enough to not
+// include antything from that node down.
 
-let totalFilesDigested = 0;
+const DIR_AND_FILES_EXCLUDE = [
+  "node_modules", "build", "dist"
+];
+
+const DIRS_FILES_TO_INCLUDE = [
+  "src", "scripts", "config.js"
+];
+
+let TotalFilesDigested = 0;
 
 (async ()=>{
-  console.log('-------------------');
-  let initialPoint;
-  if (process.argv[2]) {
-    initialPoint = process.argv[2];
+  // A path should be passed as argument, and only one argument.
+  if (process.argv[2] && process.argv.length === 3) {
+    const pathUserInput = process.argv[2];
+
+    console.log('-------------------');
+    await loopThrougAndApply(
+      path.resolve( process.cwd(), pathUserInput )
+    );
+    console.log(TotalFilesDigested, 'Files got prepend');  
+    console.log('-------------------');
+
   } else {
     console.log("No argument recieved. Please provide an starting point");
     process.exit();
   }
-  await loopThrougFilesAndApply(path.resolve(process.cwd(), process.argv[2]));
-  console.log(totalFilesDigested, 'Files got prepend');
-  console.log('-------------------');
 })();
 
-async function loopThrougFilesAndApply(dir, toApply){
+async function loopThrougAndApply(dir){
   try {
-    // Get the files as an array
-    const itemsAtDir = await fs.promises.readdir(dir);
+    const itemsAtDirAsArray = await fs.promises.readdir(dir);
+    
+    for (const item of itemsAtDirAsArray ) {
+      const itemAbsolutePath = path.join(dir, item);
+      const stat = await fs.promises.stat(itemAbsolutePath);
 
-    for (const item of itemsAtDir ) {
-      const itemPath = path.join(dir, item);
+      if(stat.isFile() && shouldItemKeepGoing(itemAbsolutePath) ) {
+          // Apply file changes.
+          await prependToFile(itemAbsolutePath, TEXT_TO_PREPEND);
+          TotalFilesDigested++;
+      }
 
-      const stat = await fs.promises.stat(itemPath);
-
-      if(stat.isFile()) {
-        if (itemPath.split("\\").filter(item => item === "src").length > 0) {
-          prependToFile(itemPath, myText, function(err) {
-            if(err) {
-              console.log('Error prependint to', itemPath);
-              throw err;
-            }
-            totalFilesDigested++;
-          });
-        }
-      } else if(stat.isDirectory()) {
-        if (
-          itemPath.split("\\")
-          .filter(item => item === "node_modules" || item === "dist" || item === "build")
-          .length > 0
-        ) {
-          //
-        } else {
-          await loopThrougFilesAndApply(itemPath, toApply);
-        }
+      if(stat.isDirectory() && shouldItemKeepGoing(itemAbsolutePath)) {
+        await loopThrougAndApply(itemAbsolutePath);
       }
     }
   }
+
   catch(e) {
     console.log("[error] Failed looping:", dir);
     throw e;
   }
 };
+
+function shouldItemKeepGoing( itemAbsoulutePath ) {
+  const absolutePathParts = itemAbsoulutePath.split("\\");
+
+  // First off check if has explicitly being set to be exclude.
+  if (
+    DIR_AND_FILES_EXCLUDE.length > 0 &&
+    absolutePathParts.some(part => DIR_AND_FILES_EXCLUDE.includes(part))
+  ) {
+    return false;
+  }
+
+  // Second, verify if are items to specifically include. 
+  if (DIRS_FILES_TO_INCLUDE.length > 0) {
+    // If its included...
+    if (absolutePathParts.some(part => DIRS_FILES_TO_INCLUDE.includes(part))) {
+      return true;
+    }
+    // reject anything else ...
+    return false
+  }
+
+  // If dirsToInclude is emtpy, treat whatever else.
+  return true;
+}
