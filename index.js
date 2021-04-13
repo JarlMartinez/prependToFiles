@@ -2,8 +2,8 @@ const fs = require( 'fs' );
 const path = require( 'path' );
 const { prependToFile } = require("./prependToFile");
 
-const TEXT_TO_PREPEND = `//
-//
+const TEXT_TO_PREPEND =
+`//
 // Copyright 2021 Venafi, Inc.
 // All Rights Reserved.
 //
@@ -11,7 +11,6 @@ const TEXT_TO_PREPEND = `//
 // Your use of this code is limited to those rights granted in the license between you and Venafi.
 //
 // Author:	Luis Martinez (luis.martinez@venafi.com)
-//
 //
 
 `;
