@@ -10,7 +10,7 @@ const TEXT_TO_PREPEND =
 // This program is unpublished proprietary source code of Venafi, Inc.
 // Your use of this code is limited to those rights granted in the license between you and Venafi.
 //
-// Author:	Luis Martinez (luis.martinez@venafi.com)
+// Author: Luis Martinez (luis.martinez@venafi.com)
 //
 
 `;
