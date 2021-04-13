@@ -20,11 +20,11 @@ const TEXT_TO_PREPEND =
 // include antything from that node down.
 
 const DIR_AND_FILES_EXCLUDE = [
-  "node_modules", "build", "dist"
+  "node_modules", "build", "dist", ".json", ".html"
 ];
 
 const DIRS_FILES_TO_INCLUDE = [
-  "src", "scripts", "config.js", "core", "navbar", "root", "codesign"
+  "src", "scripts", "config.js"
 ];
 
 let TotalFilesDigested = 0;
@@ -79,7 +79,8 @@ function shouldItemKeepGoing( itemAbsoulutePath ) {
   // First off check if has explicitly being set to be exclude.
   if (
     DIR_AND_FILES_EXCLUDE.length > 0 &&
-    absolutePathParts.some(part => DIR_AND_FILES_EXCLUDE.includes(part))
+    (absolutePathParts.some(part => DIR_AND_FILES_EXCLUDE.includes(part)) ||
+    DIR_AND_FILES_EXCLUDE.includes( path.extname(itemAbsoulutePath) )) // Check if its file and if extension should be excluded.
   ) {
     return false;
   }
