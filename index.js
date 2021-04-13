@@ -20,11 +20,11 @@ const TEXT_TO_PREPEND =
 // include antything from that node down.
 
 const DIR_AND_FILES_EXCLUDE = [
-  "node_modules", "build", "dist", ".json", ".html"
+  "node_modules", "build", "dist", ".json", ".html", ".ejs"
 ];
 
 const DIRS_FILES_TO_INCLUDE = [
-  "src", "scripts", "config.js"
+  "src", "scripts", "config.js", "webpack.config.js"
 ];
 
 let TotalFilesDigested = 0;
