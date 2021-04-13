@@ -24,7 +24,7 @@ const DIR_AND_FILES_EXCLUDE = [
 ];
 
 const DIRS_FILES_TO_INCLUDE = [
-  "src", "scripts", "config.js"
+  "src", "scripts", "config.js", "core", "navbar", "root", "codesign"
 ];
 
 let TotalFilesDigested = 0;
